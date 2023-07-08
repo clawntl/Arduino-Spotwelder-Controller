@@ -210,6 +210,7 @@ void loop() {
       break;
   }
   
+  Serial.println("test");
 
 
 
