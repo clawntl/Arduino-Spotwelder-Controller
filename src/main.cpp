@@ -26,6 +26,9 @@ const menuItem menuItems[NUM_MENU_ITEMS] = {
 #define BUTTON_SELECT 3
 #define BUTTON_DOWN 4
 
+#define maxDelay 20000
+#define minDelay 50
+
 
 int item_curr = 0;
 int item_prev;
@@ -42,12 +45,6 @@ bool button_down_clicked = false;
 bool button_select_clicked = false;
 
 
-/*
-pages[NUM_MENU_ITEMS]= {
-
-
-
-}*/
 
 void drawMainMenu(menuItem item1, menuItem item2, menuItem item3) {
   //Draw first item
@@ -85,24 +82,21 @@ void setup() {
   u8g2.setBitmapMode(1);
 }
 
-void drawTimeAdjustPage(int currentDelay, int currentSelectItem) {
-
+void drawTimeAdjustPage(unsigned int currentDelay, int currentSelectItem) {
   struct selectButton {
     int position;
     char *label;
     int x_space;
     int y_space;
-    int flags;
-    const uint8_t font;
   };
   const selectButton selectButtons[7] = {
-      {10, "-1k", 2, 2, U8G2_BTN_HCENTER|U8G2_BTN_BW1},
-      {31, "-50", 2, 2, U8G2_BTN_HCENTER|U8G2_BTN_BW1},
-      {50, "-1", 2, 2, U8G2_BTN_HCENTER|U8G2_BTN_BW1},
-      {64, "\x0044", 1, 2, U8G2_BTN_HCENTER|U8G2_BTN_BW1},
-      {79, "+1", 2, 2, U8G2_BTN_HCENTER|U8G2_BTN_BW1},
-      {97, "+50", 2, 2, U8G2_BTN_HCENTER|U8G2_BTN_BW1},
-      {118, "+1k", 2, 2, U8G2_BTN_HCENTER|U8G2_BTN_BW1}
+      {10, "-1k", 2, 2},
+      {31, "-50", 2, 2},
+      {50, "-1", 2, 2},
+      {64, "\x0044", 1, 2},
+      {79, "+1", 2, 2},
+      {97, "+50", 2, 2},
+      {118, "+1k", 2, 2}
   };
   
   u8g2.setFont(u8g2_font_koleeko_tr);
@@ -116,7 +110,7 @@ void drawTimeAdjustPage(int currentDelay, int currentSelectItem) {
 
   for (int i=0; i<7; i++) {
     selectButton currentButton = selectButtons[i];
-    int flags = currentButton.flags;
+    int flags = U8G2_BTN_HCENTER|U8G2_BTN_BW1;
     if ((i-3) == currentSelectItem) {flags = flags|U8G2_BTN_INV;}
     if ((i-3) == 0) {
       u8g2.setFont(u8g2_font_m2icon_7_tf);
@@ -126,108 +120,100 @@ void drawTimeAdjustPage(int currentDelay, int currentSelectItem) {
     }
     u8g2.drawButtonUTF8(currentButton.position, 59, flags, 0, currentButton.x_space, currentButton.y_space, currentButton.label);
   }
-  
-  /*
-  u8g2.setFont( u8g2_font_m2icon_7_tf);
-  u8g2.drawButtonUTF8(64, 59, U8G2_BTN_HCENTER|U8G2_BTN_BW1, 0, 1, 2, "\x0044");
-
-  u8g2.setFont(u8g2_font_5x8_tr);
-  u8g2.drawButtonUTF8(50, 59, U8G2_BTN_HCENTER|U8G2_BTN_BW1, 0, 2, 2, "-1");
-  u8g2.drawButtonUTF8(31, 59, U8G2_BTN_HCENTER|U8G2_BTN_BW1, 0, 2, 2, "-50");
-  u8g2.drawButtonUTF8(10, 59, U8G2_BTN_HCENTER|U8G2_BTN_BW1, 0, 2, 2, "-1k");
-
-  u8g2.drawButtonUTF8(79, 59, U8G2_BTN_HCENTER|U8G2_BTN_BW1, 0, 2, 2, "+1");
-  u8g2.drawButtonUTF8(97, 59, U8G2_BTN_HCENTER|U8G2_BTN_BW1, 0, 2, 2, "+50");
-  u8g2.drawButtonUTF8(118, 59, U8G2_BTN_HCENTER|U8G2_BTN_BW1, 0, 2, 2, "+1k");
-  //u8g2.drawHVLine
-  */
 }
 
 void loop() {
 
   //Serial.println("page: " + (String)page);
-  
-  if (digitalRead(BUTTON_SELECT) == HIGH && !button_select_clicked && page == 0) {
-    button_select_clicked = true;
-    page = item_curr + 1;
-    //Serial.println(page);
-  }
 
-  
-  if (digitalRead(BUTTON_SELECT) == HIGH && !button_select_clicked && page != 0 && page != 2) {
-    button_select_clicked = true;
-    page = 0;
-  }
+  switch (page)
+  {
+    case 0:
+      if (digitalRead(BUTTON_SELECT) == HIGH && !button_select_clicked) {
+        button_select_clicked = true;
+        page = item_curr + 1;
+      }
+      if (digitalRead(BUTTON_UP) == HIGH && !button_up_clicked) {
+        button_up_clicked = true;
+        item_curr--;
+        if (item_curr < 0) {item_curr = NUM_MENU_ITEMS - 1;}
+      }
+      if (digitalRead(BUTTON_DOWN) == HIGH && !button_down_clicked) {
+        button_down_clicked = true;
+        item_curr++;
+        if (item_curr >= NUM_MENU_ITEMS) {item_curr = 0;}
+      }
+      break;
 
-  if (digitalRead(BUTTON_UP) == HIGH && !button_up_clicked && page == 0) {
-    button_up_clicked = true;
-    item_curr--;
-    if (item_curr < 0) {item_curr = NUM_MENU_ITEMS - 1;}
-  }
-
-  if (digitalRead(BUTTON_DOWN) == HIGH && !button_down_clicked && page == 0) {
-    button_down_clicked = true;
-    item_curr++;
-    if (item_curr >= NUM_MENU_ITEMS) {item_curr = 0;}
-  }
-
-  
-
-  Serial.println(button_select_clicked);
-
-  if (digitalRead(BUTTON_DOWN) == HIGH && !button_down_clicked && page == 2) {
-    button_down_clicked = true;
-    currentTimeAdjustPageItem++;
-    if (currentTimeAdjustPageItem > 3) {currentTimeAdjustPageItem = 3;}
-  }
-
-  if (digitalRead(BUTTON_UP) == HIGH && !button_up_clicked && page == 2) {
-    button_up_clicked = true;
-    currentTimeAdjustPageItem--;
-    if (currentTimeAdjustPageItem < -3) {currentTimeAdjustPageItem = -3;}
-  }
-
-  if (digitalRead(BUTTON_SELECT) == HIGH && page == 2) {
+    case 1:
+        digitalWrite(7, HIGH);
+        digitalWrite(8, HIGH);
+        delay(500);
+        digitalWrite(7, LOW); 
+        digitalWrite(8, LOW);
+      break;
     
-    switch (currentTimeAdjustPageItem){
-      case -3:
-        timeDelay = timeDelay - 1000;
-        break;
-      case -2:
-        timeDelay = timeDelay - 50;
-        break;
-      case -1:
-        timeDelay = timeDelay - 1;
-        break;
-      case 0:
-        if (!button_select_clicked){
-          page = 0; 
-          item_curr = 1;
+    case 2:
+    //Handle inputs when on 
+      if (digitalRead(BUTTON_DOWN) == HIGH && !button_down_clicked) {
+        button_down_clicked = true;
+        currentTimeAdjustPageItem++;
+        if (currentTimeAdjustPageItem > 3) {currentTimeAdjustPageItem = 3;}
+      }
+      if (digitalRead(BUTTON_UP) == HIGH && !button_up_clicked) {
+        button_up_clicked = true;
+        currentTimeAdjustPageItem--;
+        if (currentTimeAdjustPageItem < -3) {currentTimeAdjustPageItem = -3;}
+      }
+      if (digitalRead(BUTTON_SELECT) == HIGH) {
+        int changeDelay = 0;
+        switch (currentTimeAdjustPageItem){
+          case -3:
+            changeDelay = -1000;
+            break;
+          case -2:
+            changeDelay = -50;
+            break;
+          case -1:
+            changeDelay = -1;
+            break;
+          case 0:
+            if (!button_select_clicked){
+              page = 0; 
+              item_curr = 1;
+            }
+            break;
+          case 1:
+            changeDelay = 1;
+            break;
+          case 2:
+            changeDelay = 50;
+            break;
+          case 3:
+            changeDelay = 1000;
+            break;
         }
-        //page = 0; 
-        //item_curr = 1;
-        break;
-      case 1:
-        timeDelay = timeDelay - 1;
-        break;
-      case 2:
-        timeDelay = timeDelay + 50;
-        break;
-      case 3:
-        timeDelay = timeDelay + 1000;
-        break;
-    }
-    button_select_clicked = true;
+        
+        if (changeDelay < 0 && timeDelay < (abs(changeDelay)+minDelay)) {timeDelay = minDelay;}
+        else if (timeDelay + changeDelay > maxDelay) {timeDelay = maxDelay;}
+        else { timeDelay = timeDelay + changeDelay;}
+
+        button_select_clicked = true;
+      }
+      break;
+
+    default:
+      if (digitalRead(BUTTON_SELECT) == HIGH && !button_select_clicked) {
+        button_select_clicked = true;
+        page = 0;
+      }
+      break;
   }
+  
 
 
 
-
-
-
-
-
-  // Reset buttons if unclicked
+  // Reset buttons if they are released
   if (digitalRead(BUTTON_UP) == LOW && button_up_clicked) {
     button_up_clicked = false;
   }
@@ -239,29 +225,29 @@ void loop() {
     button_select_clicked = false;
   }
 
+  //Update Main Menu items
   item_prev = item_curr - 1;
   if (item_prev < 0) {item_prev = NUM_MENU_ITEMS - 1;}
   item_next = item_curr + 1;
   if (item_next >= NUM_MENU_ITEMS) {item_next = 0;}
 
 
-  if (page == 1) {
-    digitalWrite(7, HIGH);
-    digitalWrite(8, HIGH);
-  }
-  else {digitalWrite(7, LOW); digitalWrite(8, LOW);}
 
   u8g2.firstPage();
   do {
-    if (page == 0) {
-      drawMainMenu(menuItems[item_prev], menuItems[item_curr], menuItems[item_next]);
-    }
-    else if (page == 2) {
-      drawTimeAdjustPage(timeDelay, currentTimeAdjustPageItem);
-      //Serial.println("got here2");
-    }
-    else{
-      u8g2.drawStr(40, 16, menuItems[item_curr].labelText);
+    switch (page)
+    {
+      case 0:
+        drawMainMenu(menuItems[item_prev], menuItems[item_curr], menuItems[item_next]);
+        break;
+      
+      case 2:
+        drawTimeAdjustPage(timeDelay, currentTimeAdjustPageItem);
+        break;
+
+      default:
+        u8g2.drawStr(40, 16, menuItems[item_curr].labelText);
+        break;
     }
   } while ( u8g2.nextPage() );
 }
