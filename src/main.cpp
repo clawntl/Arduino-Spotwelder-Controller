@@ -49,21 +49,21 @@ bool button_select_clicked = false;
 void drawMainMenu(menuItem item1, menuItem item2, menuItem item3) {
   //Draw first item
   u8g2.drawXBMP(2, 4, item1.iconWidth, item1.iconHeight, item1.iconBits);
-  u8g2.setFont(u8g2_font_7x14_tr);
+  u8g2.setFont(u8g2_font_tenthinnerguys_tr);
   u8g2.drawStr(24, 16, item1.labelText);
 
   //Draw second item
   u8g2.drawXBMP(2, 24, item2.iconWidth, item2.iconHeight, item2.iconBits);
-  u8g2.setFont(u8g2_font_7x14B_tr);
-  u8g2.drawStr(24, 37, item2.labelText);
+  u8g2.setFont(u8g2_font_tenthinguys_tr);
+  u8g2.drawStr(24, 36, item2.labelText);
 
   //Draw selection box
   u8g2.drawXBMP(0, 21, img_text_selector_width, img_text_selector_height, img_text_selector_bits);
 
   //Draw third item
   u8g2.drawXBMP(2, 46, item3.iconWidth, item3.iconHeight, item3.iconBits);
-  u8g2.setFont(u8g2_font_7x14_tr);
-  u8g2.drawStr(24, 59, item3.labelText);
+  u8g2.setFont(u8g2_font_tenthinnerguys_tr);
+  u8g2.drawStr(24, 58, item3.labelText);
 
   //Draw scroll bar
   u8g2.drawXBMP(120, 0, img_side_scroll_bar_width, img_side_scroll_bar_height, img_side_scroll_bar_bits);
@@ -99,14 +99,14 @@ void drawTimeAdjustPage(unsigned int currentDelay, int currentSelectItem) {
       {118, "+1k", 2, 2}
   };
   
-  u8g2.setFont(u8g2_font_koleeko_tr);
+  u8g2.setFont(u8g2_font_tenthinguys_tr);
   u8g2.drawButtonUTF8(64, 9, U8G2_BTN_HCENTER|U8G2_BTN_BW0, 0, 0, 0, "Time Adjust");
 
-  u8g2.drawHLine(0, 11, 128);
+  u8g2.drawHLine(0, 12, 128);
 
-  u8g2.setFont(u8g2_font_inb16_mr);
+  u8g2.setFont(u8g2_font_fub20_tr);
   String text = String(currentDelay) + " ms";
-  u8g2.drawStr(4, 38, text.c_str());
+  u8g2.drawStr(4, 40, text.c_str());
 
   for (int i=0; i<7; i++) {
     selectButton currentButton = selectButtons[i];
@@ -151,6 +151,7 @@ void loop() {
         delay(500);
         digitalWrite(7, LOW); 
         digitalWrite(8, LOW);
+        page = 0;
       break;
     
     case 2:
@@ -247,7 +248,10 @@ void loop() {
         break;
 
       default:
-        u8g2.drawStr(40, 16, menuItems[item_curr].labelText);
+        u8g2.setFont(u8g2_font_tenthinguys_tr);
+        u8g2.drawButtonUTF8(64, 9, U8G2_BTN_HCENTER|U8G2_BTN_BW0, 0, 0, 0, menuItems[item_curr].labelText);
+
+        u8g2.drawHLine(0, 12, 128);
         break;
     }
   } while ( u8g2.nextPage() );
