@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "author": "claw_ntl",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-nano", "id": "nano", "top": 0, "left": 0, "attrs": {} },
+    { "type": "board-ssd1306", "id": "oled1", "top": 131.28, "left": -31.5, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 142.37,
+      "left": 70.82,
+      "rotate": 90,
+      "attrs": { "color": "green", "bounce": "1", "label": "Up" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn2",
+      "top": 141.41,
+      "left": 131.64,
+      "rotate": 90,
+      "attrs": { "color": "green", "bounce": "1", "label": "Select" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn3",
+      "top": 141.17,
+      "left": 191.64,
+      "rotate": 90,
+      "attrs": { "color": "green", "bounce": "1", "label": "Down" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -140.27,
+      "left": 52.39,
+      "rotate": 270,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-ks2e-m-dc5",
+      "id": "relay1",
+      "top": -93.71,
+      "left": 68.53,
+      "rotate": 90,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-ks2e-m-dc5",
+      "id": "relay2",
+      "top": -94.14,
+      "left": 12.38,
+      "rotate": 90,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -161.13,
+      "left": 27.18,
+      "rotate": 270,
+      "attrs": { "color": "red", "flip": "" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": -159.48,
+      "left": 94.1,
+      "rotate": 270,
+      "attrs": { "color": "red", "flip": "" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": -140.61,
+      "left": 116.55,
+      "rotate": 270,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": 238.69,
+      "left": 72.7,
+      "rotate": 270,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r4",
+      "top": 239.42,
+      "left": 134.04,
+      "rotate": 270,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r5",
+      "top": 241.27,
+      "left": 194.47,
+      "rotate": 270,
+      "attrs": { "value": "1000" }
+    }
+  ],
+  "connections": [
+    [ "oled1:GND", "nano:GND.1", "black", [ "v-26.75", "h90.29", "v-26.07", "h47.54" ] ],
+    [ "oled1:VCC", "nano:5V", "red", [ "v-66.08", "h109.18" ] ],
+    [ "oled1:SCL", "nano:A5", "yellow", [ "v-60.34", "h70.93" ] ],
+    [ "oled1:SDA", "nano:A4", "green", [ "v-38.24", "h51.5" ] ],
+    [ "relay1:COIL2", "nano:GND.2", "black", [ "h0" ] ],
+    [ "relay2:COIL2", "nano:GND.2", "black", [ "v10.87", "h56.52" ] ],
+    [ "relay1:COIL1", "nano:7", "magenta", [ "v20.37", "h-29.63" ] ],
+    [ "relay2:COIL1", "nano:8", "purple", [ "v7.56", "h16.92" ] ],
+    [ "relay2:P2", "relay1:P2", "red", [ "v9.12", "h56.15" ] ],
+    [ "relay1:P2", "nano:5V", "red", [ "h50.3", "v142.82", "h-49.93" ] ],
+    [ "r1:1", "relay2:NO2", "red", [ "h0" ] ],
+    [ "r1:2", "led1:A", "red", [ "h0" ] ],
+    [ "led1:C", "nano:GND.2", "black", [ "v11.76", "h-33.73", "v92.22", "h94.85" ] ],
+    [ "r2:2", "led2:A", "red", [ "h0" ] ],
+    [ "r2:1", "relay1:NO2", "red", [ "h0" ] ],
+    [ "led2:C", "nano:GND.2", "black", [ "h6.1", "v101.93", "h-11.9" ] ],
+    [ "btn1:2.r", "r3:2", "black", [ "v0" ] ],
+    [ "btn2:2.r", "r4:2", "black", [ "v9.11", "h0.03" ] ],
+    [ "btn3:2.r", "r5:2", "black", [ "v0" ] ],
+    [ "r3:1", "r4:1", "black", [ "h0" ] ],
+    [ "r4:1", "r5:1", "black", [ "h0" ] ],
+    [ "nano:GND.1", "r3:1", "black", [ "v21.88", "h-47.24", "v25.92", "h-21.37", "v163.49" ] ],
+    [ "nano:5V", "btn1:1.l", "red", [ "v0" ] ],
+    [ "nano:5V", "btn2:1.l", "red", [ "v62.76", "h56.84" ] ],
+    [ "nano:5V", "btn3:1.l", "red", [ "v62.76", "h116.84" ] ],
+    [ "btn1:2.l", "nano:2", "limegreen", [ "v-30.19", "h79.19", "v-107.42", "h-65.81" ] ],
+    [ "nano:3", "btn2:2.l", "cyan", [ "v-12.55", "h79.97", "v120.38", "h-22.93" ] ],
+    [ "nano:4", "btn3:2.l", "blue", [ "v-17.11", "h93.21", "v149.98" ] ]
+  ],
+  "dependencies": {}
+}
