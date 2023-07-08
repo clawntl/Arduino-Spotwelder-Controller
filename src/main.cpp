@@ -16,7 +16,7 @@ struct menuItem {
 const menuItem menuItems[NUM_MENU_ITEMS] = {
     {icon_weld_bits, icon_weld_width, icon_weld_height, "Weld"},
     {icon_time_bits, icon_time_width, icon_time_height, "Time Adjust"},
-    {icon_power_bits, icon_power_width, icon_power_height, "Power Mode"},
+    {icon_power_bits, icon_power_width, icon_power_height, "Power Adjust"},
     {icon_manual_bits, icon_manual_width, icon_manual_height, "Manual Mode"},
     {icon_setting_bits, icon_setting_width, icon_setting_height, "Settings"},
     {icon_info_bits, icon_info_width, icon_info_height, "Information"}
@@ -210,8 +210,6 @@ void loop() {
       }
       break;
   }
-  
-  Serial.println("test");
 
 
 
