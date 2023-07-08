@@ -36,7 +36,7 @@ int item_next;
 
 int page = 0;
 
-int currentTimeAdjustPageItem = 0;
+int currentSetDelayPageItem = 0;
 
 unsigned int timeDelay = 1032;
 
@@ -82,7 +82,7 @@ void setup() {
   u8g2.setBitmapMode(1);
 }
 
-void drawTimeAdjustPage(unsigned int currentDelay, int currentSelectItem) {
+void drawSetDelayPage(unsigned int currentDelay, int currentSelectItem) {
   struct selectButton {
     int position;
     char *label;
@@ -100,7 +100,7 @@ void drawTimeAdjustPage(unsigned int currentDelay, int currentSelectItem) {
   };
   
   u8g2.setFont(u8g2_font_tenthinguys_tr);
-  u8g2.drawButtonUTF8(64, 9, U8G2_BTN_HCENTER|U8G2_BTN_BW0, 0, 0, 0, "Time Adjust");
+  u8g2.drawButtonUTF8(64, 9, U8G2_BTN_HCENTER|U8G2_BTN_BW0, 0, 0, 0, "Set Delay");
 
   u8g2.drawHLine(0, 12, 128);
 
@@ -158,17 +158,17 @@ void loop() {
     //Handle inputs when on 
       if (digitalRead(BUTTON_DOWN) == HIGH && !button_down_clicked) {
         button_down_clicked = true;
-        currentTimeAdjustPageItem++;
-        if (currentTimeAdjustPageItem > 3) {currentTimeAdjustPageItem = 3;}
+        currentSetDelayPageItem++;
+        if (currentSetDelayPageItem > 3) {currentSetDelayPageItem = 3;}
       }
       if (digitalRead(BUTTON_UP) == HIGH && !button_up_clicked) {
         button_up_clicked = true;
-        currentTimeAdjustPageItem--;
-        if (currentTimeAdjustPageItem < -3) {currentTimeAdjustPageItem = -3;}
+        currentSetDelayPageItem--;
+        if (currentSetDelayPageItem < -3) {currentSetDelayPageItem = -3;}
       }
       if (digitalRead(BUTTON_SELECT) == HIGH) {
         int changeDelay = 0;
-        switch (currentTimeAdjustPageItem){
+        switch (currentSetDelayPageItem){
           case -3:
             changeDelay = -1000;
             break;
@@ -242,7 +242,7 @@ void loop() {
         break;
       
       case 2:
-        drawTimeAdjustPage(timeDelay, currentTimeAdjustPageItem);
+        drawSetDelayPage(timeDelay, currentSetDelayPageItem);
         break;
 
       default:
