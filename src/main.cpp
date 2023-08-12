@@ -25,10 +25,15 @@ const menuItem menuItems[NUM_MENU_ITEMS] = {
 #define BUTTON_UP 2
 #define BUTTON_SELECT 3
 #define BUTTON_DOWN 4
+#define BUTTON_WELD 4
+
+#define TRANSFORMER_1 7
+#define TRANSFORMER_2 8
 
 #define maxDelay 20000
 #define minDelay 50
 
+#define COOLDOWN_DELAY 3100
 
 int item_curr = 0;
 int item_prev;
@@ -36,15 +41,122 @@ int item_next;
 
 int page = 0;
 
+int powerSetting = 1;
+
 int currentSetDelayPageItem = 0;
 
-unsigned int timeDelay = 1032;
+unsigned int weldDelay = 1032;
 
 bool button_up_clicked = false;
 bool button_down_clicked = false;
 bool button_select_clicked = false;
+bool button_weld_clicked = false;
+
+bool weldEnable = false;
+unsigned long prevWeldEnableMillis;
+
+bool cooldownEnable = false;
+unsigned long prevCooldownEnableMillis;
+
+void drawPageTitle()
+{
+  u8g2.setFont(u8g2_font_tenthinguys_tr);
+  u8g2.drawButtonUTF8(64, 9, U8G2_BTN_HCENTER|U8G2_BTN_BW0, 0, 0, 0, menuItems[item_curr].labelText);
+
+  u8g2.drawHLine(0, 12, 128);
+}
+
+void drawWeldPage(unsigned int weldDelay, bool weldActive, bool cooldownActive)
+{
+  drawPageTitle();
+
+  u8g2.setFont(u8g2_font_tenthinnerguys_tr);
+
+  String delayText = (String)weldDelay + " ms  -  Pwr: ";
+  switch (powerSetting){
+    case 1:
+      delayText = delayText + "LOW";
+      break;
+    case 2:
+      delayText = delayText + "HIGH";
+      break;
+  }
+  u8g2.drawStr(4, 28, delayText.c_str());
+
+  String weldText = "Weld: ";
+  if (weldActive)
+  {
+    int weldTimeRemaining = (int)((((unsigned long)weldDelay - (millis() - prevWeldEnableMillis))/1000.)*10);
+    if (weldTimeRemaining == 23596) {weldTimeRemaining = 0;}
+    
+    weldText = weldText + "ON (" + (String)(weldTimeRemaining/10) + "." + (String)(weldTimeRemaining%10) + " s)";
+  }
+  else
+  {
+    weldText = weldText + "OFF";
+  }
+  u8g2.drawStr(4, 42, weldText.c_str());
+
+  String cooldownText = "Cool: ";
+  if (cooldownActive)
+  {
+    int coolTimeRemaining = (int)((((unsigned long)COOLDOWN_DELAY - (millis() - prevCooldownEnableMillis))/1000.)*10);
+    if (coolTimeRemaining == 23596) {coolTimeRemaining = 0;}
+    
+    cooldownText = cooldownText + "ON (" + (String)(coolTimeRemaining/10) + "." + (String)(coolTimeRemaining%10) + " s)";
+  }
+  else
+  {
+    cooldownText = cooldownText + "OFF";
+  }
+  u8g2.drawStr(4, 56, cooldownText.c_str());
 
 
+}
+
+void weld(bool manual)
+{
+  unsigned long currentMillis = millis();
+  if (cooldownEnable)
+  {
+    if (currentMillis - prevCooldownEnableMillis >= COOLDOWN_DELAY)
+    {
+      cooldownEnable = false;
+    }
+  }
+  else {
+    if (manual){
+
+    }
+    else {
+      if (weldEnable){
+          if (currentMillis - prevWeldEnableMillis >= weldDelay)
+          {
+            digitalWrite(7, LOW); 
+            digitalWrite(8, LOW);
+            weldEnable = false;
+            cooldownEnable = true;
+            prevCooldownEnableMillis = currentMillis;
+          }
+      }
+      else {
+        weldEnable = true;
+        prevWeldEnableMillis = millis();
+
+        switch (powerSetting){
+          case 1:
+            digitalWrite(TRANSFORMER_1, HIGH);
+            break;
+          
+          case 2:
+            digitalWrite(TRANSFORMER_1, HIGH);
+            digitalWrite(TRANSFORMER_2, HIGH);
+            break;
+        }
+      }
+    }
+  }
+}
 
 void drawMainMenu(menuItem item1, menuItem item2, menuItem item3) {
   //Draw first item
@@ -77,6 +189,9 @@ void setup() {
   pinMode(BUTTON_SELECT, INPUT);
   pinMode(BUTTON_DOWN, INPUT);
 
+  pinMode(TRANSFORMER_1, OUTPUT);
+  pinMode(TRANSFORMER_2, OUTPUT);
+
   u8g2.setColorIndex(1);
   u8g2.begin();
   u8g2.setBitmapMode(1);
@@ -99,10 +214,7 @@ void drawSetDelayPage(unsigned int currentDelay, int currentSelectItem) {
       {118, "+1k", 2, 2}
   };
   
-  u8g2.setFont(u8g2_font_tenthinguys_tr);
-  u8g2.drawButtonUTF8(64, 9, U8G2_BTN_HCENTER|U8G2_BTN_BW0, 0, 0, 0, "Set Delay");
-
-  u8g2.drawHLine(0, 12, 128);
+  drawPageTitle();
 
   u8g2.setFont(u8g2_font_fub20_tr);
   String text = String(currentDelay) + " ms";
@@ -146,12 +258,33 @@ void loop() {
       break;
 
     case 1:
-        digitalWrite(7, HIGH);
-        digitalWrite(8, HIGH);
-        delay(500);
-        digitalWrite(7, LOW); 
-        digitalWrite(8, LOW);
+      if (digitalRead(BUTTON_SELECT) == HIGH && !button_select_clicked) {
+        button_select_clicked = true;
         page = 0;
+      }
+
+      if (digitalRead(BUTTON_WELD) == HIGH && !button_weld_clicked && !weldEnable) {
+        button_weld_clicked = true;
+        /*weldEnable = true;
+        prevWeldEnableMillis = millis();
+        digitalWrite(7, HIGH);
+        digitalWrite(8, HIGH);*/
+
+        weld(false);
+      }
+
+      if (weldEnable || cooldownEnable)
+      {
+        weld(false);
+        /*
+        unsigned long currentMillis = millis();
+        if (prevWeldEnableMillis - currentMillis >= 500)
+        {
+          digitalWrite(7, LOW); 
+          digitalWrite(8, LOW);
+          weldEnable = false;
+        }*/
+      }
       break;
     
     case 2:
@@ -181,7 +314,7 @@ void loop() {
           case 0:
             if (!button_select_clicked){
               page = 0; 
-              item_curr = 1;
+              //item_curr = 1;
             }
             break;
           case 1:
@@ -195,9 +328,9 @@ void loop() {
             break;
         }
         
-        if (changeDelay < 0 && timeDelay < (abs(changeDelay)+minDelay)) {timeDelay = minDelay;}
-        else if (timeDelay + changeDelay > maxDelay) {timeDelay = maxDelay;}
-        else { timeDelay = timeDelay + changeDelay;}
+        if (changeDelay < 0 && weldDelay < (abs(changeDelay)+minDelay)) {weldDelay = minDelay;}
+        else if (weldDelay + changeDelay > maxDelay) {weldDelay = maxDelay;}
+        else { weldDelay = weldDelay + changeDelay;}
 
         button_select_clicked = true;
       }
@@ -225,6 +358,10 @@ void loop() {
     button_select_clicked = false;
   }
 
+  if (digitalRead(BUTTON_WELD) == LOW && button_weld_clicked) {
+    button_weld_clicked = false;
+  }
+
   //Update Main Menu items
   item_prev = item_curr - 1;
   if (item_prev < 0) {item_prev = NUM_MENU_ITEMS - 1;}
@@ -240,17 +377,25 @@ void loop() {
       case 0:
         drawMainMenu(menuItems[item_prev], menuItems[item_curr], menuItems[item_next]);
         break;
-      
+
+      case 1:
+        drawWeldPage(weldDelay, weldEnable, cooldownEnable);
+        break;
       case 2:
-        drawSetDelayPage(timeDelay, currentSetDelayPageItem);
+        drawSetDelayPage(weldDelay, currentSetDelayPageItem);
         break;
 
+      default:
+        drawPageTitle();
+        break;
+      /*
       default:
         u8g2.setFont(u8g2_font_tenthinguys_tr);
         u8g2.drawButtonUTF8(64, 9, U8G2_BTN_HCENTER|U8G2_BTN_BW0, 0, 0, 0, menuItems[item_curr].labelText);
 
         u8g2.drawHLine(0, 12, 128);
         break;
+      */
     }
   } while ( u8g2.nextPage() );
 }
