@@ -12,6 +12,22 @@ struct menuItem {
   const char *labelText;
 }; 
 
+#define BUTTON_UP 2
+#define BUTTON_SELECT 3
+#define BUTTON_DOWN 4
+#define BUTTON_WELD 5
+
+#define TRANSFORMER_1 7
+#define TRANSFORMER_2 8
+
+#define maxDelay 20000
+#define minDelay 50
+#define defaultDelay 1032
+
+#define defaultPowerSetting 1 //1 for single, 2 for double
+
+#define COOLDOWN_DELAY 3100
+
 #define NUM_MENU_ITEMS 6
 const menuItem menuItems[NUM_MENU_ITEMS] = {
     {icon_weld_bits, icon_weld_width, icon_weld_height, "Weld"},
@@ -22,18 +38,6 @@ const menuItem menuItems[NUM_MENU_ITEMS] = {
     {icon_info_bits, icon_info_width, icon_info_height, "Information"}
 };
 
-#define BUTTON_UP 2
-#define BUTTON_SELECT 3
-#define BUTTON_DOWN 4
-#define BUTTON_WELD 4
-
-#define TRANSFORMER_1 7
-#define TRANSFORMER_2 8
-
-#define maxDelay 20000
-#define minDelay 50
-
-#define COOLDOWN_DELAY 3100
 
 int item_curr = 0;
 int item_prev;
@@ -41,11 +45,11 @@ int item_next;
 
 int page = 0;
 
-int powerSetting = 1;
+int powerSetting = defaultPowerSetting;
 
 int currentSetDelayPageItem = 0;
 
-unsigned int weldDelay = 1032;
+unsigned int weldDelay = defaultDelay;
 
 bool button_up_clicked = false;
 bool button_down_clicked = false;
@@ -72,7 +76,7 @@ void drawWeldPage(unsigned int weldDelay, bool weldActive, bool cooldownActive)
 
   u8g2.setFont(u8g2_font_tenthinnerguys_tr);
 
-  String delayText = (String)weldDelay + " ms  -  Pwr: ";
+  String delayText = (String)weldDelay + " ms   Pwr: ";
   switch (powerSetting){
     case 1:
       delayText = delayText + "LOW";
@@ -234,6 +238,25 @@ void drawSetDelayPage(unsigned int currentDelay, int currentSelectItem) {
   }
 }
 
+void drawSetPowerPage(int powerMode) {
+  drawPageTitle();
+  String text;
+  switch (powerMode)
+  {
+    case 1:
+      text = "LOW";
+      break;
+    case 2:
+      text = "HIGH";
+      break;
+    default:
+      text = "error";
+      break;
+  }
+  u8g2.setFont(u8g2_font_fub20_tr);
+  u8g2.drawStr(4, 40, text.c_str());
+}
+
 void loop() {
 
   //Serial.println("page: " + (String)page);
@@ -336,6 +359,22 @@ void loop() {
       }
       break;
 
+    case 3:
+      if (digitalRead(BUTTON_UP) == HIGH && !button_up_clicked) {
+        button_up_clicked = true;
+        if (powerSetting == 1){
+          powerSetting = 2;
+        }
+        else {
+          powerSetting = 1;
+        }
+      }
+      if (digitalRead(BUTTON_SELECT) == HIGH && !button_select_clicked) {
+        button_select_clicked = true;
+        page = 0;
+      }
+
+
     default:
       if (digitalRead(BUTTON_SELECT) == HIGH && !button_select_clicked) {
         button_select_clicked = true;
@@ -383,6 +422,10 @@ void loop() {
         break;
       case 2:
         drawSetDelayPage(weldDelay, currentSetDelayPageItem);
+        break;
+      
+      case 3:
+        drawSetPowerPage(powerSetting);
         break;
 
       default:
